@@ -1,0 +1,5 @@
+rootProject.name = 'ex_ss9_micro'
+
+include 'config-server'
+include 'pharmacy-service'
+
