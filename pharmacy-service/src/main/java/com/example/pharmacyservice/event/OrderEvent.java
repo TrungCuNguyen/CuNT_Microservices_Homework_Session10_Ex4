@@ -7,23 +7,49 @@ public class OrderEvent implements Serializable {
     private String orderId;
     private String medicineId;
     private Integer quantity;
+    private Double priceSell;
+    private Double totalAmount;
     private Long timestamp;
 
     public OrderEvent() {
+    }
+
+    public OrderEvent(String orderId, String medicineId, Integer quantity, Double priceSell, Double totalAmount, Long timestamp) {
+        this.orderId = orderId;
+        this.medicineId = medicineId;
+        this.quantity = quantity;
+        this.priceSell = priceSell;
+        this.totalAmount = totalAmount;
+        this.timestamp = timestamp;
     }
 
     public OrderEvent(String orderId, String medicineId, Integer quantity, Long timestamp) {
         this.orderId = orderId;
         this.medicineId = medicineId;
         this.quantity = quantity;
+        this.priceSell = 50000.0;
+        this.totalAmount = this.priceSell * quantity;
         this.timestamp = timestamp;
     }
 
     public OrderEvent(String orderId, String medicineId, Integer quantity) {
-        this.orderId = orderId;
-        this.medicineId = medicineId;
-        this.quantity = quantity;
-        this.timestamp = System.currentTimeMillis();
+        this(orderId, medicineId, quantity, System.currentTimeMillis());
+    }
+
+    public Double getPriceSell() {
+        return priceSell;
+    }
+
+    public void setPriceSell(Double priceSell) {
+        this.priceSell = priceSell;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     public String getOrderId() {

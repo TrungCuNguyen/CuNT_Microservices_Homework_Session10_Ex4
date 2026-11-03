@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/pharmacy")
+@RequestMapping({ "/api/v1/pharmacy", "/api/pharmacy" })
 public class OrderController {
 
     @Autowired
@@ -26,9 +26,40 @@ public class OrderController {
     private String topicName;
 
     /**
+     * API bán thuốc / Thanh toán theo đúng định dạng ảnh mô tả:
+     * POST http://localhost:8080/api/pharmacy/sell?medicineId=1&quantity=5
+     * Trả về thông báo: "Thanh toán thành công! Sự kiện đã được gửi tới Kafka."
+     */
+    @PostMapping(value = "/sell", produces = "text/plain;charset=UTF-8")
+    public String sellMedicine(
+            @RequestParam(name = "medicineId", defaultValue = "1") String medicineId,
+            @RequestParam(name = "quantity", defaultValue = "5") int quantity,
+            @RequestParam(name = "price", required = false) Double price) {
+
+        String orderId = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        double priceSell = price != null ? price : 50000.0;
+        double totalAmount = priceSell * quantity;
+
+        OrderEvent orderEvent = new OrderEvent(
+                orderId,
+                medicineId,
+                quantity,
+                priceSell,
+                totalAmount,
+                System.currentTimeMillis());
+
+        // Gửi OrderEvent vào topic Kafka với Message Key là medicineId
+        orderProducerService.sendOrderEvent(orderEvent);
+
+        return "Thanh toán thành công! Sự kiện đã được gửi tới Kafka.";
+    }
+
+    /**
      * API bán thuốc / Thanh toán đơn hàng
-     * Khi nhân viên bấm "Thanh toán", hệ thống gửi sự kiện OrderEvent vào topic medicine-stock-events
-     * Message Key là medicineId để đảm bảo cùng loại thuốc luôn đi vào cùng 1 Partition
+     * Khi nhân viên bấm "Thanh toán", hệ thống gửi sự kiện OrderEvent vào topic
+     * medicine-stock-events
+     * Message Key là medicineId để đảm bảo cùng loại thuốc luôn đi vào cùng 1
+     * Partition
      */
     @PostMapping("/checkout")
     public ResponseEntity<Map<String, Object>> checkout(@RequestBody(required = false) CheckoutRequest request) {
@@ -58,8 +89,7 @@ public class OrderController {
                 orderId,
                 medicineId,
                 quantity,
-                System.currentTimeMillis()
-        );
+                System.currentTimeMillis());
 
         // 2. Gửi OrderEvent vào Kafka với Message Key là medicineId
         orderProducerService.sendOrderEvent(orderEvent);
@@ -87,4 +117,3 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 }
-
