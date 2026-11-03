@@ -3,4 +3,5 @@ rootProject.name = 'ex_ss9_micro'
 include 'config-server'
 include 'pharmacy-service'
 include 'inventory-service'
+include 'notification-service'
 
